@@ -10,7 +10,9 @@ use App\Models\User;
 use App\Models\Evidence;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Illuminate\Http\Request;
 use DB;
+use Image;
 
 class EvidenceController extends Component
 {
@@ -63,6 +65,7 @@ class EvidenceController extends Component
             'category_id' => 'required',
             'userSelected' => 'required',
             'status' => 'required',
+            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
 
         $messages = [
@@ -70,6 +73,9 @@ class EvidenceController extends Component
             'category_id.required' => 'La categoria es requerida',
             'userSelected.required' => 'El usuario es requerido',
             'status.required' => 'El estado es requerido',
+            'image.image' => 'El archivo debe ser una imagen',
+            'image.mimes' => 'El archivo debe ser una imagen',
+            'image.max' => 'El archivo debe ser una imagen',
         ];
         
 
@@ -88,9 +94,17 @@ class EvidenceController extends Component
 
         if($this->image){
             $customFileName = uniqid().'_.'.$this->image->extension();
-            $this->image->storeAs('public/evidence', $customFileName);
-            // $customFileName = $category->id . '.' . $this->image->getClientOriginalExtension();
-            // $this->image->storeAs('categories', $customFileName, 'public');
+            // $this->image->storeAs('public/evidence', $customFileName);
+
+            if (!file_exists('storage/evidence'.'/')) {
+                mkdir('storage/evidence'.'/', 666, true);
+            }
+            
+            $img = Image::make($this->image->path());
+            $img->resize(100, 100, function ($constraint) {
+                $constraint->aspectRatio();
+            })->save('storage/evidence'.'/'.$customFileName);
+
             $evidence->image = $customFileName;
             $evidence->save();
         }
@@ -118,6 +132,7 @@ class EvidenceController extends Component
             'category_id' => 'required',
             'userSelected' => 'required',
             'status' => 'required',
+
         ];
 
         $messages = [
@@ -139,11 +154,20 @@ class EvidenceController extends Component
 
         if($this->image){
             $customFileName = uniqid().'_.'.$this->image->extension();
-            $this->image->storeAs('public/evidence', $customFileName);
+            // $this->image->storeAs('public/evidence', $customFileName);
             $imageName = $evidence->image;//imagen anterior
+            
+            if (!file_exists('storage/evidence'.'/')) {
+                mkdir('storage/evidence'.'/', 666, true);
+            }
+            
+            $img = Image::make($this->image->path());
+            $img->resize(100, 100, function ($constraint) {
+                $constraint->aspectRatio();
+            })->save('storage/evidence'.'/'.$customFileName);
+            
             $evidence->image = $customFileName;
             $evidence->save();
-
             if($imageName != null){
                 if(file_exists('public/evidence/'.$imageName)){
                     unlink('public/evidence/'.$imageName);
@@ -205,7 +229,32 @@ class EvidenceController extends Component
         ->select('evidence.*', 'c.name as category_name', 'u.name as user_name', 
         DB::raw('IF(evidence.status = 1, "Activo", "Inactivo") as status_name'),
         DB::raw('IF(evidence.image IS NULL, "default.png", CONCAT(\'evidence/\',evidence.image)) as url_image')
-    );
+        );
         return $evidencias->get();
+    }
+
+    public function storeApi(Request $request)
+    {
+        // $request = request();
+        header("Access-Control-Allow-Origin: *");
+        $evidence = Evidence::create([
+            'description' => $request->description,
+            'category_id' => $request->category_id,
+            'user_id' => $request->user_id,
+            'status' => $request->status,
+            'image' => $request->image,
+        ]);
+        
+
+        $customFileName = '';
+
+        if($request->image){
+            $customFileName = uniqid().'_.'.$request->image->extension();
+            $request->image->storeAs('public/evidence', $customFileName);
+            $evidence->image = $customFileName;
+            $evidence->save();
+        }
+
+        return $evidence;
     }
 }

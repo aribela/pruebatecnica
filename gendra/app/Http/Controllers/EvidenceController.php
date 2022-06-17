@@ -14,8 +14,14 @@ class EvidenceController extends Controller
      */
     public function index()
     {
-        $evidencias = Evidence::all();
-        return $evidencias;
+        header("Access-Control-Allow-Origin: *");
+        $evidencias = Evidence::join('users as u', 'evidence.user_id', '=', 'u.id')
+        ->join('categories as c', 'c.id', 'evidence.category_id')
+        ->select('evidence.*', 'c.name as category_name', 'u.name as user_name', 
+        DB::raw('IF(evidence.status = 1, "Activo", "Inactivo") as status_name'),
+        DB::raw('IF(evidence.image IS NULL, "default.png", CONCAT(\'evidence/\',evidence.image)) as url_image')
+        );
+        return $evidencias->get();
     }
 
     /**
@@ -37,10 +43,12 @@ class EvidenceController extends Controller
     public function store(Request $request)
     {
         //
+        header("Access-Control-Allow-Origin: *");
         $evidence = Evidence::create([
             'description' => $request->description,
             'category_id' => $request->category_id,
-            'user_id' => $request->userSelected,
+            'user_id' => $request->user_id,
+            'status' => $request->status,
             'image' => $request->image,
         ]);
         

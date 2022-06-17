@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\EvidenceController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,11 +18,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Route::get('/evidenciasindex', 'Evidence@index');
+// Route::get('/evidenciasindex', [EvidenceController::class, 'index'])->middleware('auth:sanctum');
 
 // Route::put('/evidencias/actualizar', 'Evidence@update');
 
-// Route::post('/evidencias/guardar', 'Evidence@store');
+// Route::post('/evidenciassotre', 'EvidenceController@store')->middleware('auth:sanctum');
 
 // Route::delete('/evidencias/borrar/{id}', 'Evidence@destroy');
 

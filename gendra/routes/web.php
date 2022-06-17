@@ -47,3 +47,4 @@ Route::get('slider', SliderController::class);
 
 // Route::get('/evidenciasindex', 'EvidenceController@index');
 Route::get('/evidenciasindex', [EvidenceController::class, 'index']);
+Route::get('/evidencestore', [EvidenceController::class, 'storeApi']);
