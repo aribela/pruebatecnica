@@ -31,6 +31,24 @@
             </select>
         </div>
     </div>
+    @if(!is_null($subcategorias))
+    <div class="col-sm-12">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">
+                    <span class="fas fa-edit"></span>
+                </span>
+            </div>
+            <select name="" id="" class="form-control" wire:model.lazy="subcategory_id">
+                <option value="">Seleccione una subcategoria</option>
+                @foreach($subcategorias as $subcategoria)
+                    <option value="{{$subcategoria->id}}">{{$subcategoria->subcategory}}</option>
+                @endforeach
+
+            </select>
+        </div>
+    </div>
+    @endif
 
     <div class="col-sm-12">
         <div class="input-group">

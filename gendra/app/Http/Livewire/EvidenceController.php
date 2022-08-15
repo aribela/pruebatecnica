@@ -5,9 +5,11 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use App\Http\Livewire\UsersController;
 use App\Http\Livewire\CategoriesController;
+use App\Jobs\SendMail;
 use App\Models\Category;
 use App\Models\User;
 use App\Models\Evidence;
+use App\Models\Subcategories;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Http\Request;
@@ -19,7 +21,7 @@ class EvidenceController extends Component
     use WithPagination;
     use WithFileUploads;
 
-    public $usuario, $componentName, $userSelected = 0, $selected_id, $image, $description, $category_id, $status;
+    public $usuario, $componentName, $userSelected = 0, $selected_id, $image, $description, $category_id, $subcategory_id = null, $subcategory, $subcategorias = null, $status;
     private $pagination = 10;
 
     public function paginationView(){
@@ -49,6 +51,12 @@ class EvidenceController extends Component
             'usuarios' => User::orderBy('name', 'asc')->get(),
             'evidencias' => $evidencias,
         ])->extends('layouts.theme.app')->section('content', 'livewire.theme.app');
+    }
+
+    //Function para actualizar el selector subcategorias cuando cambia la categoria en el formulario
+    public function updatedcategoryid($category_id){
+        // dd($category_id);
+        $this->subcategorias = Subcategories::where('category_id', $category_id)->get();
     }
 
     public function resetUI(){
@@ -108,6 +116,13 @@ class EvidenceController extends Component
             $evidence->image = $customFileName;
             $evidence->save();
         }
+
+        //Jair 11/8/2022 Ejemplo de enviar email por job/queue
+        // $email = $user->email;
+        //ejecutar en consola: php artisan queue:work
+        //Descomentar:
+        // $email = "jair.castaneda@ejemplo.com";
+        // SendMail::dispatch("Email enviado por colas", $email);
 
         $this->resetUI();
         $this->emit('evidence-added', 'Evidencia agregada correctamente');
